@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Interactive finite-field elliptic-curve scalar multiplication experiment for Statistics Homework 01.">
+  <title>Elliptic Curve Lab | Homework 01</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="wordmark" href="#">Statistics.</a>
+    <span class="course-label">STATISTICS · HOMEWORK 01</span>
+  </header>
+
+  <main class="page">
+    <section class="intro">
+      
+      <h1>Exploring patterns
+in elliptic-curve points.</h1>
+      <p class="intro-copy">Explore elliptic-curve point addition and scalar multiplication over a small finite field. Change the base point, follow each calculation, and inspect how the result changes.</p>
+    </section>
+
+    <section class="setup panel">
+      <div class="section-heading">
+        <span class="section-number">01</span>
+        <div><h2>Set up the experiment</h2><p>The original homework curve is preserved throughout.</p></div>
+      </div>
+      <div class="curve-details">
+        <div><span class="detail-label">CURVE EQUATION</span><p class="equation">y² ≡ x³ + 7 <span>(mod 17)</span></p></div>
+        <div><span class="detail-label">FIELD PRIME</span><p class="equation">p = 17</p></div>
+        <div><span class="detail-label">VALID POINTS</span><p class="equation" id="point-count">—</p></div>
+      </div>
+      <form id="key-form">
+        <div class="control-grid">
+          <div class="field">
+            <label for="base-point">Base point <span>G</span></label>
+            <select id="base-point" name="base-point"></select>
+          </div>
+          <div class="field">
+            <label for="private-key">Private scalar <span>k (1–100)</span></label>
+            <input id="private-key" type="number" min="1" max="100" value="8" step="1" required>
+          </div>
+        </div>
+        <div class="input-row">
+          <button type="submit" class="primary-button">Calculate kG <span aria-hidden="true">↗</span></button>
+          <button type="button" id="reset-button" class="quiet-button">Reset to report example</button>
+        </div>
+        <p class="hint">The report's original example remains available: G = (1, 5), k = 8, Q = (1, 12).</p>
+        <p id="error-message" class="error" role="alert"></p>
+      </form>
+    </section>
+
+    <section class="visual-section">
+      <div class="section-heading">
+        <span class="section-number">02</span>
+        <div><h2>Finite-field map</h2><p>Discrete points satisfying the curve equation modulo 17 — not a continuous real-valued curve.</p></div>
+      </div>
+      <div class="graph-panel panel">
+        <div class="graph-heading"><span>POINTS IN F₁₇</span><span class="legend"><i class="dot base"></i> Base point <i class="dot result"></i> Current multiple</span></div>
+        <div class="animation-controls graph-animation-controls">
+          <div class="animation-copy"><span class="detail-label">WATCH THE POINT MOVE</span><p id="animation-status">Ready to explore the calculation.</p></div>
+          <div class="control-buttons">
+            <button type="button" id="prev-step" class="quiet-button" disabled>← Previous</button>
+            <button type="button" id="play-animation" class="primary-button">▶ Play animation</button>
+            <button type="button" id="next-step" class="quiet-button">Next →</button>
+          </div>
+        </div>
+        <canvas id="curve-canvas" aria-label="Plot of valid elliptic curve points over the finite field modulo 17"></canvas>
+        <p class="graph-caption">The highlighted result is Q = kG. The plotted coordinates are residues from 0 to 16.</p>
+      </div>
+    </section>
+
+    <section class="summary-grid" aria-live="polite">
+      <article class="metric panel"><span class="metric-label">BASE POINT G</span><strong id="base-summary">(1, 5)</strong></article>
+      <article class="metric panel"><span class="metric-label">PRIVATE SCALAR k</span><strong id="scalar-summary">8</strong></article>
+      <article class="metric panel result-metric"><span class="metric-label">TOY PUBLIC KEY Q = kG</span><strong id="public-key">Q = (1, 12)</strong></article>
+      <article class="metric panel"><span class="metric-label">POINT ORDER</span><strong id="order-summary">9</strong><small>multiples until reaching infinity</small></article>
+    </section>
+
+    <section class="results">
+      <div class="section-heading results-heading">
+        <span class="section-number">03</span>
+        <div><h2>Scalar multiplication</h2><p>For larger k, the calculation uses the double-and-add method.</p></div>
+      </div>
+      <div class="method-note panel">
+        <span class="method-tag">METHOD</span>
+        <p><strong>Double-and-add</strong> reads the binary representation of k. It doubles the current point at each bit and adds G when the bit is 1. This reduces the number of point operations compared with adding G repeatedly.</p>
+        <p class="binary-line">k in binary: <code id="binary-value">1000</code></p>
+      </div>
+      <div class="log panel">
+        <div class="log-head"><span>STEP</span><span>OPERATION</span><span>RESULTING POINT</span></div>
+        <div id="calculation-log" aria-live="polite"></div>
+      </div>
+      <div class="multiples-panel panel">
+        <div class="multiples-heading"><div><span class="method-tag">REFERENCE SEQUENCE</span><h3>All multiples from G to kG</h3><p>This list preserves the full sequence used in the original experiment, independently of the faster double-and-add trace above.</p></div><span class="sequence-count" id="sequence-count">8 points</span></div>
+        <div class="multiples-table-wrap"><table class="multiples-table"><thead><tr><th>Multiple</th><th>Point</th><th>Status</th></tr></thead><tbody id="multiples-list"></tbody></table></div>
+      </div>
+    </section>
+
+    <section class="observations panel">
+      <div class="section-heading"><span class="section-number">04</span><div><h2>What to notice</h2><p>Observations linked to the toy-curve experiment.</p></div></div>
+      <div class="observation-grid">
+        <p><span>01</span> Every calculated point remains on the curve over F₁₇.</p>
+        <p><span>02</span> The same scalar can produce different points when the base point changes.</p>
+        <p><span>03</span> A base point has a finite order; its multiples eventually reach the point at infinity and repeat.</p>
+        <p><span>04</span> Double-and-add changes the calculation method, not the mathematical result Q = kG.</p>
+      </div>
+      
+    </section>
+  </main>
+  
+</body>
+</html>
